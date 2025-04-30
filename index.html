@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Weather Checker</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="card">
+    <h2>🌤 Weather Checker</h2>
+
+    <div class="input-group">
+      <select id="cityDropdown" title="Select a city from the list to get the weather prediction">
+        <option value="">-- Select a State/City --</option>
+        <optgroup label="Delhi">
+          <option value="Delhi">Delhi</option>
+        </optgroup>
+        <optgroup label="Maharashtra">
+          <option value="Mumbai">Mumbai</option>
+          <option value="Pune">Pune</option>
+          <option value="Nagpur">Nagpur</option>
+        </optgroup>
+        <optgroup label="Uttar Pradesh">
+          <option value="Lucknow">Lucknow</option>
+          <option value="Kanpur">Kanpur</option>
+          <option value="Agra">Agra</option>
+          <option value="Varanasi">Varanasi</option>
+        </optgroup>
+        <optgroup label="Tamil Nadu">
+          <option value="Chennai">Chennai</option>
+        </optgroup>
+        <optgroup label="Karnataka">
+          <option value="Bengaluru">Bengaluru</option>
+        </optgroup>
+        <optgroup label="West Bengal">
+          <option value="Kolkata">Kolkata</option>
+        </optgroup>
+        <optgroup label="Gujarat">
+          <option value="Ahmedabad">Ahmedabad</option>
+          <option value="Rajkot">Rajkot</option>
+          <option value="Vadodara">Vadodara</option>
+        </optgroup>
+        <optgroup label="Bihar">
+          <option value="Patna">Patna</option>
+        </optgroup>
+        <optgroup label="Madhya Pradesh">
+          <option value="Bhopal">Bhopal</option>
+          <option value="Indore">Indore</option>
+        </optgroup>
+        <optgroup label="Rajasthan">
+          <option value="Jaipur">Jaipur</option>
+        </optgroup>
+        <optgroup label="Telangana">
+          <option value="Hyderabad">Hyderabad</option>
+        </optgroup>
+        <optgroup label="Jammu & Kashmir">
+          <option value="Srinagar">Srinagar</option>
+        </optgroup>
+      </select>
+
+      <!-- Add the Get Weather Button -->
+      <button onclick="getWeather()">🌞 Get Weather 🌙</button>
+    </div>
+
+    <div class="weather-info" id="weatherInfo"></div>
+  </div>
+  <h2>🌤️ Live Temperature Graph (Today & Tomorrow)</h2>
+  <canvas id="liveChart"></canvas>
+
+
+  <script src="script.js"></script>
+</body>
+</html>
