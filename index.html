@@ -4,72 +4,181 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Weather Checker</title>
-  <link rel="stylesheet" href="styles.css"/>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .section { display: none; }
+    .active { display: block; }
+    .card { max-width: 500px; margin: auto; padding: 20px; background: #f8f8f8; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
+    .input-group, select, button { margin-top: 10px; width: 100%; padding: 10px; font-size: 16px; }
+    .weather-table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+    .weather-table th, .weather-table td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+    canvas { margin-top: 20px; }
+  </style>
 </head>
 <body>
-  <div class="card">
-    <h2>🌤 Weather Checker</h2>
 
-    <div class="input-group">
-      <select id="cityDropdown" title="Select a city from the list to get the weather prediction">
-        <option value="">-- Select a State/City --</option>
-        <optgroup label="Delhi">
+  <!-- City Selection -->
+  <div id="homeSection" class="section active">
+    <div class="card">
+      <h2>🌤 Weather Checker</h2>
+      <div class="input-group">
+        <select id="cityDropdown" title="a city name" onchange="selectCityFromDropdown()">
+          <option value="">-- Select a City --</option>
           <option value="Delhi">Delhi</option>
-        </optgroup>
-        <optgroup label="Maharashtra">
           <option value="Mumbai">Mumbai</option>
-          <option value="Pune">Pune</option>
-          <option value="Nagpur">Nagpur</option>
-        </optgroup>
-        <optgroup label="Uttar Pradesh">
-          <option value="Lucknow">Lucknow</option>
-          <option value="Kanpur">Kanpur</option>
-          <option value="Agra">Agra</option>
-          <option value="Varanasi">Varanasi</option>
-        </optgroup>
-        <optgroup label="Tamil Nadu">
-          <option value="Chennai">Chennai</option>
-        </optgroup>
-        <optgroup label="Karnataka">
           <option value="Bengaluru">Bengaluru</option>
-        </optgroup>
-        <optgroup label="West Bengal">
-          <option value="Kolkata">Kolkata</option>
-        </optgroup>
-        <optgroup label="Gujarat">
-          <option value="Ahmedabad">Ahmedabad</option>
-          <option value="Rajkot">Rajkot</option>
-          <option value="Vadodara">Vadodara</option>
-        </optgroup>
-        <optgroup label="Bihar">
-          <option value="Patna">Patna</option>
-        </optgroup>
-        <optgroup label="Madhya Pradesh">
-          <option value="Bhopal">Bhopal</option>
-          <option value="Indore">Indore</option>
-        </optgroup>
-        <optgroup label="Rajasthan">
-          <option value="Jaipur">Jaipur</option>
-        </optgroup>
-        <optgroup label="Telangana">
           <option value="Hyderabad">Hyderabad</option>
-        </optgroup>
-        <optgroup label="Jammu & Kashmir">
-          <option value="Srinagar">Srinagar</option>
-        </optgroup>
-      </select>
-
-      <!-- Add the Get Weather Button -->
-      <button onclick="getWeather()">🌞 Get Weather 🌙</button>
+          <option value="Chennai">Chennai</option>
+          <option value="Kolkata">Kolkata</option>
+          <option value="Ahmedabad">Ahmedabad</option>
+          <option value="Pune">Pune</option>
+          <option value="Jaipur">Jaipur</option>
+          <option value="Lucknow">Lucknow</option>
+          <option value="Bhopal">Bhopal</option>
+          <option value="Patna">Patna</option>
+          <option value="Ranchi">Ranchi</option>
+          <option value="Chandigarh">Chandigarh</option>
+          <option value="Indore">Indore</option>
+          <option value="Nagpur">Nagpur</option>
+          <option value="Vadodara">Vadodara</option>
+          <option value="Surat">Surat</option>
+          <option value="Varanasi">Varanasi</option>
+          <option value="Guwahati">Guwahati</option>
+          <option value="Visakhapatnam">Visakhapatnam</option>
+        </select>
+        <button onclick="goToResultSection()">🌞 Get Weather 🌙</button>
+      </div>
     </div>
-
-    <div class="weather-info" id="weatherInfo"></div>
   </div>
-  <h2>🌤️ Live Temperature Graph (Today & Tomorrow)</h2>
-  <canvas id="liveChart"></canvas>
 
+  <!-- Weather Info -->
+  <div id="resultSection" class="section">
+    <div class="card">
+      <h2>Weather Information</h2>
+      <div id="weatherInfo" class="weather-info">Loading...</div>
+      <button onclick="goToSection('homeSection')">↩ Go Back</button>
+      <button onclick="goToSection('chartSection')">📊 View Temperature Chart</button>
+    </div>
+  </div>
 
-  <script src="script.js"></script>
+  <!-- Chart -->
+  <div id="chartSection" class="section">
+    <div class="card">
+      <h2>📊 Temperature Comparison Chart</h2>
+      <canvas id="tempChart"></canvas>
+      <button onclick="goToSection('resultSection')">↩ Go Back</button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const apiKey = '1fa53a176092d622b2d91b170f92f1fa';
+
+    function goToSection(id) {
+      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      if (id === 'chartSection') loadChart();
+      if (id === 'resultSection') getWeather();
+    }
+
+    function selectCityFromDropdown() {
+      const city = document.getElementById('cityDropdown').value;
+      if (city) localStorage.setItem('selectedCity', city);
+    }
+
+    function goToResultSection() {
+      const city = document.getElementById('cityDropdown').value.trim();
+      if (!city) {
+        alert("Please select a city.");
+        return;
+      }
+      localStorage.setItem('selectedCity', city);
+      goToSection('resultSection');
+    }
+
+    async function getWeather() {
+      const city = localStorage.getItem('selectedCity');
+      if (!city) return;
+
+      try {
+        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`);
+        const data = await res.json();
+
+        const forecastRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${apiKey}`);
+        const forecastData = await forecastRes.json();
+        const tomorrow = forecastData.list[8];
+
+        const isDay = new Date().getHours() >= 6 && new Date().getHours() < 18;
+        const emoji = isDay ? '🌞' : '🌙';
+
+        document.getElementById('weatherInfo').innerHTML = `
+          <table class="weather-table">
+            <thead>
+              <tr>
+                <th colspan="2">Weather Information for ${data.name} ${emoji}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>🌡 Current Temperature</strong></td><td>${data.main.temp}°C</td></tr>
+              <tr><td><strong>💨 Weather Condition</strong></td><td>${data.weather[0].description}</td></tr>
+              <tr><td><strong>🌡 Next Day Temperature</strong></td><td>${tomorrow.main.temp}°C</td></tr>
+              <tr><td><strong>💨 Next Day Condition</strong></td><td>${tomorrow.weather[0].description}</td></tr>
+              <tr><td><strong>🕒 Forecast Time</strong></td><td>${tomorrow.dt_txt}</td></tr>
+            </tbody>
+          </table>
+        `;
+      } catch (err) {
+        alert("Failed to fetch weather data.");
+      }
+    }
+
+    async function loadChart() {
+      const city = localStorage.getItem('selectedCity');
+      if (!city) return;
+
+      try {
+        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`);
+        const data = await res.json();
+
+        const forecastRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${apiKey}`);
+        const forecastData = await forecastRes.json();
+        const tomorrow = forecastData.list[8];
+
+        const ctx = document.getElementById('tempChart').getContext('2d');
+        if (window.myChart) window.myChart.destroy();
+
+        window.myChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['Current Temp', 'Next Day Temp'],
+            datasets: [{
+              label: 'Temperature (°C)',
+              data: [data.main.temp, tomorrow.main.temp],
+              backgroundColor: ['#ffcc70', '#70d6ff'],
+              borderColor: ['#ffaa00', '#0077cc'],
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: `Temperature Comparison for ${data.name}`,
+                font: { size: 18 }
+              },
+              legend: { display: false }
+            },
+            scales: {
+              y: { beginAtZero: true, ticks: { stepSize: 5 } }
+            }
+          }
+        });
+      } catch (err) {
+        alert("Chart loading failed.");
+      }
+    }
+  </script>
 </body>
 </html>
