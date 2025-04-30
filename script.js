@@ -1,9 +1,14 @@
 async function getWeather() {
-  const city = document.getElementById('cityDropdown').value;
-  const apiKey = '1fa53a176092d622b2d91b170f92f1fa';
-  if (!city) return;
+  const city = localStorage.getItem('selectedCity');
+  const apiKey = '1fa53a176092d622b2d91b170f92f1fa'; // Replace with your actual API key
+
+  if (!city) {
+    alert("City is not selected!");
+    return;
+  }
 
   try {
+    // Fetch weather data from OpenWeatherMap API
     const res = await fetch(
       `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`
     );
@@ -15,12 +20,11 @@ async function getWeather() {
     const forecastData = await forecastRes.json();
     const tomorrow = forecastData.list[8];
 
-    // Add day or night emoji based on time
     const currentTime = new Date().getHours();
     const isDayTime = currentTime >= 6 && currentTime < 18;
     const timeEmoji = isDayTime ? '🌞' : '🌙';
 
-    // Output the data in a table format with emojis
+    // Display weather information in a table
     document.getElementById('weatherInfo').innerHTML = `
       <table class="weather-table">
         <thead>
@@ -52,45 +56,61 @@ async function getWeather() {
         </tbody>
       </table>
     `;
+
+    // Create a temperature comparison chart using Chart.js
+    const ctx = document.getElementById('tempChart').getContext('2d');
+
+    // Destroy previous chart if it exists
+    if (window.tempChartInstance) {
+      window.tempChartInstance.destroy();
+    }
+
+    // Create a new chart
+    window.tempChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Current Temp', 'Next Day Temp'],
+        datasets: [{
+          label: 'Temperature (°C)',
+          data: [data.main.temp, tomorrow.main.temp],
+          backgroundColor: ['#ffcc70', '#70d6ff'],
+          borderColor: ['#ffaa00', '#0077cc'],
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: `Temperature Comparison for ${data.name}`,
+            font: { size: 18 }
+          },
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 5
+            }
+          }
+        }
+      }
+    });
+
   } catch (error) {
     console.error(error);
     alert('Could not retrieve weather data.');
   }
 }
-const todayTemp = Math.floor(Math.random() * 6) + 30; // e.g., 30–35°C
-const predictedTemp = todayTemp + 1; // simple logic: tomorrow = today + 1
 
-const ctx = document.getElementById('liveChart').getContext('2d');
+// Call the function when the page loads
+window.onload = getWeather;
 
-new Chart(ctx, {
-  type: 'bar',
-  data: {
-    labels: ['Today', 'Tomorrow'],
-    datasets: [{
-      label: 'Temperature (°C)',
-      data: [todayTemp, predictedTemp],
-      backgroundColor: ['skyblue', 'lightgreen'],
-      borderColor: ['blue', 'green'],
-      borderWidth: 2
-    }]
-  },
-  options: {
-    responsive: true,
-    plugins: {
-      title: {
-        display: true,
-        text: `Today's Temp: ${todayTemp}°C | Predicted: ${predictedTemp}°C`
-      }
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: 'Temperature (°C)'
-        }
-      }
-    }
-  }
-});
-
+// Function to go back to the previous page
+function goBack() {
+  window.history.back();
+}
